@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sortable-by (0.3.0)
+    searchable-by (0.3.1)
       activerecord
       activesupport
 
@@ -52,10 +52,10 @@ GEM
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 1.6)
-    rubocop-performance (1.1.0)
-      rubocop (>= 0.67.0)
+    rubocop-performance (1.2.0)
+      rubocop (>= 0.68.0)
     ruby-progressbar (1.10.0)
-    sqlite3 (1.4.0)
+    sqlite3 (1.4.1)
     thread_safe (0.3.6)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
@@ -70,7 +70,7 @@ DEPENDENCIES
   rspec
   rubocop
   rubocop-performance
-  sortable-by!
+  searchable-by!
   sqlite3
 
 BUNDLED WITH

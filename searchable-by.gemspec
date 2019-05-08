@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
-  s.name        = 'sortable-by'
-  s.version     = '0.3.0'
+  s.name        = 'searchable-by'
+  s.version     = '0.3.1'
   s.authors     = ['Dimitrij Denissenko']
   s.email       = ['dimitrij@blacksquaremedia.com']
   s.summary     = 'Generate search scopes'
