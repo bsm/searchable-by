@@ -16,16 +16,28 @@ ActiveRecord::Base.connection.instance_eval do
   end
 end
 
-class Author < ActiveRecord::Base
+class AbstractModel < ActiveRecord::Base
+  self.abstract_class = true
+
+  searchable_by do
+    column :id
+  end
+end
+
+class Author < AbstractModel
   has_many :posts
 end
 
-class Post < ActiveRecord::Base
+class Post < AbstractModel
   belongs_to :author
 
-  searchable_by :id, :title
-  searchable_by -> { Author.arel_table[:name] } do |scope|
-    scope.joins(:author)
+  searchable_by do
+    column :title
+    column { Author.arel_table[:name] }
+
+    scope do
+      joins(:author)
+    end
   end
 end
 

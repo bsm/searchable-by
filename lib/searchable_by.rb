@@ -4,11 +4,45 @@ require 'active_support/core_ext/array/extract_options'
 
 module ActiveRecord
   module SearchableBy
+    class Config < Hash
+      def initialize
+        self[:columns] = []
+        scope { all }
+      end
+
+      def column(*attrs, &block)
+        self[:columns].push(*attrs)
+        self[:columns].push(block) if block
+      end
+
+      def scope(&block)
+        self[:scope] = block
+      end
+    end
+
+    def self.norm_values(query)
+      values = Array.wrap(query)
+      values.map! {|x| x.to_s.split(/[[:cntrl:]\s]+/) }
+      values.flatten!
+      values.reject!(&:blank?)
+      values.uniq!
+      values
+    end
+
+    def self.build_clauses(attributes, values)
+      clauses = values.map do |value|
+        c0, *cn = attributes.map do |attr|
+          build_condition(attr, value)
+        end.compact
+        cn.inject(c0) {|x, part| x.or(part) } if c0
+      end
+      clauses.compact!
+      clauses
+    end
+
     def self.build_condition(attr, value)
-      value  = value.to_s
       casted = value
       casted = attr.type_cast_for_database(casted) if attr.able_to_type_cast?
-
       case casted
       when String
         casted.gsub!('%', '\%')
@@ -23,7 +57,7 @@ module ActiveRecord
     module ClassMethods
       def self.extended(base) # :nodoc:
         base.class_attribute :_searchable_by_config, instance_accessor: false, instance_predicate: false
-        base._searchable_by_config = []
+        base._searchable_by_config = Config.new
         super
       end
 
@@ -32,32 +66,28 @@ module ActiveRecord
         super
       end
 
-      def searchable_by(*attrs, &block)
-        opts = attrs.extract_options!
-        opts[:scope] = block if block
-
-        attrs.each do |attr|
-          _searchable_by_config.push opts.merge(attr: attr)
-        end
+      def searchable_by(&block)
+        _searchable_by_config.instance_eval(&block)
       end
 
-      # @param [String] value the search query
+      # @param [String] query the search query
       # @return [ActiveRecord::Relation] the scoped relation
-      def search_by(value)
-        scope = all
-        value = value.to_s
-        return scope unless value.present?
-
-        clause = nil
-        _searchable_by_config.each do |opts|
-          attr   = opts[:attr].is_a?(Proc) ? opts[:attr].call : arel_table[opts[:attr]]
-          cond   = SearchableBy.build_condition(attr, value)
-          clause = clause ? clause.or(cond) : cond if cond
-          scope  = opts[:scope].call(scope) if opts[:scope]
+      def search_by(query)
+        attributes = _searchable_by_config[:columns].map do |col|
+          col.is_a?(Proc) ? col.call : arel_table[col]
         end
+        return all if attributes.empty?
 
-        scope = scope.where(clause) if clause
-        scope
+        values = SearchableBy.norm_values(query)
+        return all if values.empty?
+
+        clauses = SearchableBy.build_clauses(attributes, values)
+        return all if clauses.empty?
+
+        scope = instance_exec(&_searchable_by_config[:scope])
+        clauses.inject(scope) do |x, clause|
+          x.where(clause)
+        end
       end
     end
   end
