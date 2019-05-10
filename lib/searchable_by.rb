@@ -3,24 +3,42 @@ require 'shellwords'
 
 module ActiveRecord
   module SearchableBy
-    class Config < Hash
+    class Column
+      attr_reader :attr, :type
+      attr_accessor :node
+
+      def initialize(attr, type: :string)
+        @attr = attr
+        @type = type.to_sym
+      end
+    end
+
+    class Config
+      attr_reader :columns, :scoping
+      attr_accessor :max_terms
+
       def initialize
-        update columns: [], max_terms: 5
+        @columns = []
+        @max_terms = 5
         scope { all }
+      end
+
+      def initialize_copy(other)
+        @columns = other.columns.dup
+        super
       end
 
       def column(*attrs, &block)
         opts = attrs.extract_options!
-        cols = self[:columns]
         attrs.each do |attr|
-          cols.push(opts.merge(column: attr))
+          columns.push Column.new(attr, opts)
         end
-        cols.push(opts.merge(column: block)) if block
-        cols
+        columns.push Column.new(block, opts) if block
+        columns
       end
 
       def scope(&block)
-        self[:scope] = block
+        @scoping = block
       end
     end
 
@@ -32,27 +50,30 @@ module ActiveRecord
       values
     end
 
-    def self.build_clauses(relations, values)
+    def self.build_clauses(columns, values)
       clauses = values.map do |value|
         negate = value[0] == '-'
         value.slice!(0) if negate || value[0] == '+'
 
-        c0, *cn = relations.map do |opts|
-          build_condition(opts, value)
-        end.compact
-        next unless c0
+        grouping = columns.map do |column|
+          build_condition(column, value)
+        end
+        grouping.compact!
+        next if grouping.empty?
 
-        [cn.inject(c0) {|x, part| x.or(part) }, negate]
+        clause = grouping.inject(&:or)
+        clause = clause.not if negate
+        clause
       end
       clauses.compact!
       clauses
     end
 
-    def self.build_condition(opts, value)
-      case opts[:type]
+    def self.build_condition(column, value)
+      case column.type
       when :int, :integer
         begin
-          opts[:rel].eq(Integer(value))
+          column.node.eq(Integer(value))
         rescue ArgumentError
           nil
         end
@@ -60,7 +81,7 @@ module ActiveRecord
         value = value.dup
         value.gsub!('%', '\%')
         value.gsub!('_', '\_')
-        opts[:rel].matches("%#{value}%")
+        column.node.matches("%#{value}%")
       end
     end
 
@@ -72,35 +93,35 @@ module ActiveRecord
       end
 
       def inherited(base) # :nodoc:
-        base._searchable_by_config = _searchable_by_config.deep_dup
+        base._searchable_by_config = _searchable_by_config.dup
         super
       end
 
       def searchable_by(max_terms: 5, &block)
         _searchable_by_config.instance_eval(&block)
-        _searchable_by_config[:max_terms] = max_terms if max_terms
+        _searchable_by_config.max_terms = max_terms if max_terms
       end
 
       # @param [String] query the search query
       # @return [ActiveRecord::Relation] the scoped relation
       def search_by(query)
-        columns = _searchable_by_config[:columns]
+        columns = _searchable_by_config.columns
         return all if columns.empty?
 
-        values = SearchableBy.norm_values(query).first(_searchable_by_config[:max_terms])
+        values = SearchableBy.norm_values(query).first(_searchable_by_config.max_terms)
         return all if values.empty?
 
-        relations = columns.map do |opts|
-          rel = opts[:column].is_a?(Proc) ? opts[:column].call : arel_table[opts[:column]]
-          opts.merge(rel: rel)
+        columns.each do |col|
+          col.node ||= col.attr.is_a?(Proc) ? col.attr.call : arel_table[col.attr]
         end
-        clauses = SearchableBy.build_clauses(relations, values)
+        clauses = SearchableBy.build_clauses(columns, values)
         return all if clauses.empty?
 
-        scope = instance_exec(&_searchable_by_config[:scope])
-        clauses.inject(scope) do |x, (clause, negate)|
-          negate ? x.where.not(clause) : x.where(clause)
+        scope = instance_exec(&_searchable_by_config.scoping)
+        clauses.each do |clause|
+          scope = scope.where(clause)
         end
+        scope
       end
     end
   end

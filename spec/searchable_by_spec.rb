@@ -1,9 +1,15 @@
 require 'spec_helper'
 
 describe ActiveRecord::SearchableBy do
+
   it 'should ignore bad inputs' do
     expect(Post.search_by(nil).count).to eq(4)
     expect(Post.search_by('').count).to eq(4)
+  end
+
+  it 'should configure correctly' do
+    expect(AbstractModel._searchable_by_config.columns.size).to eq(1)
+    expect(Post._searchable_by_config.columns.size).to eq(4)
   end
 
   it 'should generate SQL' do
