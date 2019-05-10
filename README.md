@@ -14,11 +14,15 @@ class Post < ActiveRecord::Base
 
   # Limit the number of terms per query to 3.
   searchable_by max_terms: 3 do
-    # Allow to search strings and ints.
-    column :id, :title
+    # Allow to search strings.
+    column :title
 
-    # Allow custom attributes + arel functions.
+    # ... and integers.
+    column :id, type: :integer
+
+    # Allow custom arel nodes.
     column { Author.arel_table[:name] }
+    column { Arel::Nodes::NamedFunction.new('CONCAT', [arel_table[:prefix], arel_table[:suffix]]) }
 
     # Support custom scopes.
     scope do

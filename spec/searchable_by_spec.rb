@@ -9,11 +9,11 @@ describe ActiveRecord::SearchableBy do
   it 'should generate SQL' do
     sql = Post.search_by('123').to_sql
     expect(sql).to include(%("posts"."id" = 123))
-    expect(sql).to include(%(LOWER("posts"."title") LIKE '%123%'))
+    expect(sql).to include(%("posts"."title" LIKE '%123%'))
 
     sql = Post.search_by('foo%bar').to_sql
     expect(sql).not_to include(%("posts"."id"))
-    expect(sql).to include(%(LOWER("posts"."title") LIKE '%foo\\%bar%'))
+    expect(sql).to include(%("posts"."title" LIKE '%foo\\%bar%'))
   end
 
   it 'should search' do

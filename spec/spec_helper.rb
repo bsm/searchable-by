@@ -20,7 +20,7 @@ class AbstractModel < ActiveRecord::Base
   self.abstract_class = true
 
   searchable_by do
-    column :id
+    column :id, type: :integer
   end
 end
 

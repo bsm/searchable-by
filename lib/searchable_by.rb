@@ -10,8 +10,13 @@ module ActiveRecord
       end
 
       def column(*attrs, &block)
-        self[:columns].push(*attrs)
-        self[:columns].push(block) if block
+        opts = attrs.extract_options!
+        cols = self[:columns]
+        attrs.each do |attr|
+          cols.push(opts.merge(column: attr))
+        end
+        cols.push(opts.merge(column: block)) if block
+        cols
       end
 
       def scope(&block)
@@ -27,13 +32,13 @@ module ActiveRecord
       values
     end
 
-    def self.build_clauses(attributes, values)
+    def self.build_clauses(relations, values)
       clauses = values.map do |value|
         negate = value[0] == '-'
         value.slice!(0) if negate || value[0] == '+'
 
-        c0, *cn = attributes.map do |attr|
-          build_condition(attr, value)
+        c0, *cn = relations.map do |opts|
+          build_condition(opts, value)
         end.compact
         next unless c0
 
@@ -43,17 +48,19 @@ module ActiveRecord
       clauses
     end
 
-    def self.build_condition(attr, value)
-      casted = value
-      casted = attr.type_cast_for_database(casted) if attr.able_to_type_cast?
-      case casted
-      when String
-        casted.gsub!('%', '\%')
-        casted.gsub!('_', '\_')
-        casted.downcase!
-        attr.lower.matches("%#{casted}%")
-      when Integer
-        attr.eq(casted) unless casted.zero? && value != '0'
+    def self.build_condition(opts, value)
+      case opts[:type]
+      when :int, :integer
+        begin
+          opts[:rel].eq(Integer(value))
+        rescue ArgumentError
+          nil
+        end
+      else
+        value = value.dup
+        value.gsub!('%', '\%')
+        value.gsub!('_', '\_')
+        opts[:rel].matches("%#{value}%")
       end
     end
 
@@ -77,15 +84,17 @@ module ActiveRecord
       # @param [String] query the search query
       # @return [ActiveRecord::Relation] the scoped relation
       def search_by(query)
-        attributes = _searchable_by_config[:columns].map do |col|
-          col.is_a?(Proc) ? col.call : arel_table[col]
-        end
-        return all if attributes.empty?
+        columns = _searchable_by_config[:columns]
+        return all if columns.empty?
 
         values = SearchableBy.norm_values(query).first(_searchable_by_config[:max_terms])
         return all if values.empty?
 
-        clauses = SearchableBy.build_clauses(attributes, values)
+        relations = columns.map do |opts|
+          rel = opts[:column].is_a?(Proc) ? opts[:column].call : arel_table[opts[:column]]
+          opts.merge(rel: rel)
+        end
+        clauses = SearchableBy.build_clauses(relations, values)
         return all if clauses.empty?
 
         scope = instance_exec(&_searchable_by_config[:scope])
