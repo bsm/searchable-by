@@ -6,7 +6,7 @@ module ActiveRecord
   module SearchableBy
     class Config < Hash
       def initialize
-        self[:columns] = []
+        update columns: [], max_terms: 5
         scope { all }
       end
 
@@ -66,8 +66,9 @@ module ActiveRecord
         super
       end
 
-      def searchable_by(&block)
+      def searchable_by(max_terms: 5, &block)
         _searchable_by_config.instance_eval(&block)
+        _searchable_by_config[:max_terms] = max_terms if max_terms
       end
 
       # @param [String] query the search query
@@ -78,7 +79,7 @@ module ActiveRecord
         end
         return all if attributes.empty?
 
-        values = SearchableBy.norm_values(query)
+        values = SearchableBy.norm_values(query).first(_searchable_by_config[:max_terms])
         return all if values.empty?
 
         clauses = SearchableBy.build_clauses(attributes, values)
