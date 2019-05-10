@@ -1,6 +1,5 @@
 require 'active_record'
-require 'active_support/core_ext/array/extract_options'
-require 'active_support/core_ext/array/extract_options'
+require 'shellwords'
 
 module ActiveRecord
   module SearchableBy
@@ -21,8 +20,7 @@ module ActiveRecord
     end
 
     def self.norm_values(query)
-      values = Array.wrap(query)
-      values.map! {|x| x.to_s.split(/[[:cntrl:]\s]+/) }
+      values = Shellwords.split(query.to_s)
       values.flatten!
       values.reject!(&:blank?)
       values.uniq!
@@ -31,10 +29,15 @@ module ActiveRecord
 
     def self.build_clauses(attributes, values)
       clauses = values.map do |value|
+        negate = value[0] == '-'
+        value.slice!(0) if negate || value[0] == '+'
+
         c0, *cn = attributes.map do |attr|
           build_condition(attr, value)
         end.compact
-        cn.inject(c0) {|x, part| x.or(part) } if c0
+        next unless c0
+
+        [cn.inject(c0) {|x, part| x.or(part) }, negate]
       end
       clauses.compact!
       clauses
@@ -86,8 +89,8 @@ module ActiveRecord
         return all if clauses.empty?
 
         scope = instance_exec(&_searchable_by_config[:scope])
-        clauses.inject(scope) do |x, clause|
-          x.where(clause)
+        clauses.inject(scope) do |x, (clause, negate)|
+          negate ? x.where.not(clause) : x.where(clause)
         end
       end
     end

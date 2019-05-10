@@ -32,7 +32,7 @@ class Post < AbstractModel
   belongs_to :author
 
   searchable_by do
-    column :title
+    column :title, :body
     column { Author.arel_table[:name] }
 
     scope do
@@ -47,8 +47,8 @@ AUTHORS = {
 }.freeze
 
 POSTS = {
-  alice1: AUTHORS[:alice].posts.create!(title: 'titla'),
-  alice2: AUTHORS[:alice].posts.create!(title: 'title'),
-  bob1: AUTHORS[:bob].posts.create!(title: 'titlo'),
-  bob2: AUTHORS[:bob].posts.create!(title: 'titlu'),
+  alice1: AUTHORS[:alice].posts.create!(title: 'titla', body: 'my pia recipe '),
+  alice2: AUTHORS[:alice].posts.create!(title: 'title', body: 'your pie recipe'),
+  bob1: AUTHORS[:bob].posts.create!(title: 'titlo', body: 'her pio recipe'),
+  bob2: AUTHORS[:bob].posts.create!(title: 'titlu', body: 'our piu recipe'),
 }.freeze

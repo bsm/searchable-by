@@ -25,6 +25,12 @@ describe ActiveRecord::SearchableBy do
     expect(Post.search_by('ALICE title').pluck(:title)).to match_array(%w[title])
   end
 
+  it 'should support search markers' do
+    expect(Post.search_by('aLiCe -title').pluck(:title)).to match_array(%w[titla])
+    expect(Post.search_by('+alice "pie recipe"').pluck(:title)).to match_array(%w[title])
+    expect(Post.search_by('bob -"piu recipe"').pluck(:title)).to match_array(%w[titlo])
+  end
+
   it 'should search within scopes' do
     expect(Post.where(title: 'title').search_by('ALICE').pluck(:title)).to match_array(%w[title])
     expect(Post.where(title: 'title').search_by('bOb').pluck(:title)).to match_array(%w[])

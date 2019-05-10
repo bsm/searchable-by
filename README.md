@@ -12,14 +12,27 @@ Add `gem 'searchable-by'` to your Gemfile.
 class Post < ActiveRecord::Base
   belongs_to :author
 
-  # Allow to search strings and ints.
-  searchable_by :id, :title
+  # Limit the number of terms per query to 3.
+  searchable_by max_terms: 3 do
+    # Allow to search strings and ints.
+    column :id, :title
 
-  # Allow custom search scopes.
-  searchable_by -> { Author.arel_table[:name] } do |scope|
-    scope.joins(:author)
+    # Allow custom attributes + arel functions.
+    column { Author.arel_table[:name] }
+
+    # Support custom scopes.
+    scope do
+      joins(:author)
+    end
   end
 end
 
-Post.search_by(params[:search])  # => ActiveRecord::Relation
+# Search for 'alice'
+Post.search_by('alice') # => ActiveRecord::Relation
+
+# Search for 'alice' AND 'pie recipe'
+Post.search_by('alice "pie recipe"')
+
+# Search for 'alice' but NOT for 'pie recipe'
+Post.search_by('alice -"pie recipe"')
 ```
