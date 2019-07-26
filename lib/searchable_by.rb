@@ -73,7 +73,7 @@ module ActiveRecord
       case column.type
       when :int, :integer
         begin
-          column.node.eq(Integer(value))
+          column.node.not_eq(nil).and(column.node.eq(Integer(value)))
         rescue ArgumentError
           nil
         end
@@ -81,7 +81,7 @@ module ActiveRecord
         value = value.dup
         value.gsub!('%', '\%')
         value.gsub!('_', '\_')
-        column.node.matches("%#{value}%")
+        column.node.not_eq(nil).and(column.node.matches("%#{value}%"))
       end
     end
 
