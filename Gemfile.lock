@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    searchable-by (0.5.1)
+    searchable-by (0.5.2)
       activerecord
       activesupport
 
