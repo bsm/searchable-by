@@ -6,11 +6,12 @@ ActiveRecord::Base.configurations['test'] = { 'adapter' => 'sqlite3', 'database'
 ActiveRecord::Base.establish_connection :test
 
 ActiveRecord::Base.connection.instance_eval do
-  create_table :authors do |t|
+  create_table :users do |t|
     t.string  :name
   end
   create_table :posts do |t|
     t.integer :author_id, null: false
+    t.integer :reviewer_id
     t.string  :title
     t.text    :body
   end
@@ -24,31 +25,34 @@ class AbstractModel < ActiveRecord::Base
   end
 end
 
-class Author < AbstractModel
-  has_many :posts
+class User < AbstractModel
+  has_many :posts, foreign_key: :author_id
 end
 
 class Post < AbstractModel
-  belongs_to :author
+  belongs_to :author, class_name: 'User'
+  belongs_to :reviewer, class_name: 'User'
 
   searchable_by do
     column :title, :body
-    column { Author.arel_table[:name] }
+    column { User.arel_table[:name] }
+    column { User.arel_table.alias('reviewers_posts')[:name] }
 
     scope do
-      joins(:author)
+      joins(:author).left_outer_joins(:reviewer)
     end
   end
 end
 
-AUTHORS = {
-  alice: Author.create!(name: 'Alice'),
-  bob: Author.create!(name: 'Bob'),
+USERS = {
+  a: User.create!(name: 'Alice'),
+  b: User.create!(name: 'Bob'),
 }.freeze
 
 POSTS = {
-  alice1: AUTHORS[:alice].posts.create!(title: 'titla', body: 'my pia recipe '),
-  alice2: AUTHORS[:alice].posts.create!(title: 'title', body: 'your pie recipe'),
-  bob1: AUTHORS[:bob].posts.create!(title: 'titlo', body: 'her pio recipe'),
-  bob2: AUTHORS[:bob].posts.create!(title: 'titlu', body: 'our piu recipe'),
+  a1: USERS[:a].posts.create!(title: 'a1', body: 'my recipe '),
+  a2: USERS[:a].posts.create!(title: 'a2', body: 'your recipe'),
+  b1: USERS[:b].posts.create!(title: 'b1', body: 'her recipe'),
+  b2: USERS[:b].posts.create!(title: 'b2', body: 'our recipe'),
+  ab: USERS[:a].posts.create!(title: 'ab', reviewer: USERS[:b], body: 'their recipe'),
 }.freeze
