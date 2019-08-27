@@ -2,7 +2,7 @@ ENV['RACK_ENV'] ||= 'test'
 require 'searchable-by'
 require 'rspec'
 
-ActiveRecord::Base.configurations['test'] = { 'adapter' => 'sqlite3', 'database' => ':memory:' }
+ActiveRecord::Base.configurations = { 'test' => { 'adapter' => 'sqlite3', 'database' => ':memory:' } }
 ActiveRecord::Base.establish_connection :test
 
 ActiveRecord::Base.connection.instance_eval do
