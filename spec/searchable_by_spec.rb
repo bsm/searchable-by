@@ -1,6 +1,28 @@
 require 'spec_helper'
 
 describe ActiveRecord::SearchableBy do
+  context 'norm_values' do
+    def norm(str)
+      described_class.norm_values(str)
+    end
+
+    it 'should tokenise strings' do
+      # rubocop:disable Style/StringLiterals
+      expect(norm('simple words')).to eq(%w[simple words])
+      expect(norm(" with   \t spaces\n")).to eq(%w[with spaces])
+      expect(norm('with with duplicates with')).to eq(%w[with duplicates])
+      expect(norm('with "full term"')).to match_array(['with', "full term"])
+      expect(norm('"""odd double quotes around"""')).to match_array(["odd double quotes around"])
+      expect(norm('""even double quotes around""')).to match_array(%w[even double quotes around])
+      expect(norm('with -"minus before"')).to match_array(['with', "-minus before"])
+      expect(norm('with "-minus within"')).to match_array(['with', "-minus within"])
+      expect(norm('with +"plus before"')).to match_array(['with', "+plus before"])
+      expect(norm('with "+plus within"')).to match_array(['with', "+plus within"])
+      expect(norm('+plus "in other term"')).to match_array(['+plus', "in other term"])
+      expect(norm('contains"doublequotes')).to match_array(['contains"doublequotes'])
+      # rubocop:enable Style/StringLiterals
+    end
+  end
 
   it 'should ignore bad inputs' do
     expect(Post.search_by(nil).count).to eq(5)

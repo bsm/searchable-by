@@ -1,5 +1,4 @@
 require 'active_record'
-require 'shellwords'
 
 module ActiveRecord
   module SearchableBy
@@ -43,8 +42,12 @@ module ActiveRecord
     end
 
     def self.norm_values(query)
-      values = Shellwords.split(query.to_s)
-      values.flatten!
+      values = []
+      query  = query.to_s.dup
+      # rubocop:disable Style/PerlBackrefs
+      query.gsub!(/(\-|\+?)"([^"]*)"/) {|_| values.push("#{$1}#{$2}"); '' }
+      # rubocop:enable Style/PerlBackrefs
+      values.concat query.split(' ')
       values.reject!(&:blank?)
       values.uniq!
       values
