@@ -45,8 +45,6 @@ module ActiveRecord
       values = []
       query  = query.to_s.dup
       query.gsub!(/(\-|\+?)"([^"]+)"/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
-      query.gsub!(/(\w+)"(\w+)/) {|_| "#{Regexp.last_match(1)} #{Regexp.last_match(2)}" }
-      query.gsub!(/(")/, '')
       values.concat query.split(' ')
       values.uniq!
       values
