@@ -44,8 +44,9 @@ module ActiveRecord
     def self.norm_values(query)
       values = []
       query  = query.to_s.dup
-      query.gsub!(/(\-|\+?)"([^"]+)"/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
+      query.gsub!(/([\-\+]?)"+([^"]*)"+/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
       values.concat query.split(' ')
+      values.reject!(&:blank?)
       values.uniq!
       values
     end
