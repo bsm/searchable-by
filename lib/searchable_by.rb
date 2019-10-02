@@ -44,11 +44,10 @@ module ActiveRecord
     def self.norm_values(query)
       values = []
       query  = query.to_s.dup
-      # rubocop:disable Style/PerlBackrefs
-      query.gsub!(/(\-|\+?)"([^"]*)"/) {|_| values.push("#{$1}#{$2}"); '' }
-      # rubocop:enable Style/PerlBackrefs
+      query.gsub!(/(\-|\+?)"([^"]+)"/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
+      query.gsub!(/(\w+)"(\w+)/) {|_| "#{Regexp.last_match(1)} #{Regexp.last_match(2)}" }
+      query.gsub!(/(")/, '')
       values.concat query.split(' ')
-      values.reject!(&:blank?)
       values.uniq!
       values
     end

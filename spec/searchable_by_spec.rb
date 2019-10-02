@@ -7,20 +7,23 @@ describe ActiveRecord::SearchableBy do
     end
 
     it 'should tokenise strings' do
-      # rubocop:disable Style/StringLiterals
+      expect(norm(nil)).to eq([])
+      expect(norm('""')).to eq([])
+      expect(norm('-+""')).to eq(%w[-+])
       expect(norm('simple words')).to eq(%w[simple words])
       expect(norm(" with   \t spaces\n")).to eq(%w[with spaces])
       expect(norm('with with duplicates with')).to eq(%w[with duplicates])
-      expect(norm('with "full term"')).to match_array(['with', "full term"])
-      expect(norm('"""odd double quotes around"""')).to match_array(["odd double quotes around"])
-      expect(norm('""even double quotes around""')).to match_array(%w[even double quotes around])
-      expect(norm('with -"minus before"')).to match_array(['with', "-minus before"])
-      expect(norm('with "-minus within"')).to match_array(['with', "-minus within"])
-      expect(norm('with +"plus before"')).to match_array(['with', "+plus before"])
-      expect(norm('with "+plus within"')).to match_array(['with', "+plus within"])
-      expect(norm('+plus "in other term"')).to match_array(['+plus', "in other term"])
-      expect(norm('contains"doublequotes')).to match_array(['contains"doublequotes'])
-      # rubocop:enable Style/StringLiterals
+      expect(norm('with "full term"')).to eq(['full term', 'with'])
+      expect(norm('"""odd double quotes around"""')).to eq(['odd double quotes around'])
+      expect(norm('""even double quotes around""')).to eq(['even double quotes around'])
+      expect(norm('with -"minus before"')).to eq(['-minus before', 'with'])
+      expect(norm('with "-minus within"')).to eq(['-minus within', 'with'])
+      expect(norm('with +"plus before"')).to eq(['+plus before', 'with'])
+      expect(norm('with "+plus within"')).to eq(['+plus within', 'with'])
+      expect(norm('+plus "in other term"')).to eq(['in other term', '+plus'])
+      expect(norm('contains"doublequotes')).to eq(%w[contains doublequotes])
+      expect(norm('with_blank \'\'')).to eq(%w[with_blank ''])
+      expect(norm('with_blank_doubles ""')).to eq(%w[with_blank_doubles])
     end
   end
 
