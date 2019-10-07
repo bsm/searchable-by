@@ -1,6 +1,30 @@
 require 'spec_helper'
 
 describe ActiveRecord::SearchableBy do
+  context 'norm_values' do
+    def norm(str)
+      described_class.norm_values(str)
+    end
+
+    it 'should tokenise strings' do
+      expect(norm(nil)).to eq([])
+      expect(norm('""')).to eq([])
+      expect(norm('-+""')).to eq(%w[+ -])
+      expect(norm('simple words')).to eq(%w[simple words])
+      expect(norm(" with   \t spaces\n")).to eq(%w[with spaces])
+      expect(norm('with with duplicates with')).to eq(%w[with duplicates])
+      expect(norm('with "full term"')).to eq(['full term', 'with'])
+      expect(norm('"""odd double quotes around"""')).to eq(['odd double quotes around'])
+      expect(norm('""even double quotes around""')).to eq(['even double quotes around'])
+      expect(norm('with -"minus before"')).to eq(['-minus before', 'with'])
+      expect(norm('with "-minus within"')).to eq(['-minus within', 'with'])
+      expect(norm('with +"plus before"')).to eq(['+plus before', 'with'])
+      expect(norm('with "+plus within"')).to eq(['+plus within', 'with'])
+      expect(norm('+plus "in other term"')).to eq(['in other term', '+plus'])
+      expect(norm('with_blank \'\'')).to eq(%w[with_blank ''])
+      expect(norm('with_blank_doubles ""')).to eq(['with_blank_doubles'])
+    end
+  end
 
   it 'should ignore bad inputs' do
     expect(Post.search_by(nil).count).to eq(5)

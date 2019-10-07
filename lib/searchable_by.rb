@@ -1,5 +1,4 @@
 require 'active_record'
-require 'shellwords'
 
 module ActiveRecord
   module SearchableBy
@@ -43,8 +42,10 @@ module ActiveRecord
     end
 
     def self.norm_values(query)
-      values = Shellwords.split(query.to_s)
-      values.flatten!
+      values = []
+      query  = query.to_s.dup
+      query.gsub!(/([\-\+]?)"+([^"]*)"+/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
+      values.concat query.split(' ')
       values.reject!(&:blank?)
       values.uniq!
       values
