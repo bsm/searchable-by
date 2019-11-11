@@ -41,21 +41,37 @@ module ActiveRecord
       end
     end
 
+    Value = Struct.new(:term, :negate)
+
     def self.norm_values(query)
       values = []
       query  = query.to_s.dup
-      query.gsub!(/([\-\+]?)"+([^"]*)"+/) {|_| values.push("#{Regexp.last_match(1)}#{Regexp.last_match(2)}"); '' }
-      values.concat query.split(' ')
-      values.reject!(&:blank?)
+
+      # capture any terms inside double quotes
+      # exclude from seach if preceded by '-'
+      query.gsub!(/([\-\+]?)"+([^"]*)"+/) do |_|
+        term = Regexp.last_match(2)
+        negate = Regexp.last_match(1) == '-'
+
+        values.push Value.new(term, negate) unless term.blank?
+        ''
+      end
+
+      # for the remaining terms remove sign if precedes
+      # exclude term from search if sign preceding is '-'
+      query.split(' ').each do |term|
+        negate = term[0] == '-'
+        term.slice!(0) if negate || term[0] == '+'
+
+        values.push Value.new(term, negate) unless term.blank?
+      end
+
       values.uniq!
       values
     end
 
     def self.build_clauses(columns, values)
       clauses = values.map do |value|
-        negate = value[0] == '-'
-        value.slice!(0) if negate || value[0] == '+'
-
         grouping = columns.map do |column|
           build_condition(column, value)
         end
@@ -63,7 +79,7 @@ module ActiveRecord
         next if grouping.empty?
 
         clause = grouping.inject(&:or)
-        clause = clause.not if negate
+        clause = clause.not if value.negate
         clause
       end
       clauses.compact!
@@ -74,15 +90,15 @@ module ActiveRecord
       case column.type
       when :int, :integer
         begin
-          column.node.not_eq(nil).and(column.node.eq(Integer(value)))
+          column.node.not_eq(nil).and(column.node.eq(Integer(value.term)))
         rescue ArgumentError
           nil
         end
       else
-        value = value.dup
-        value.gsub!('%', '\%')
-        value.gsub!('_', '\_')
-        column.node.not_eq(nil).and(column.node.matches("%#{value}%"))
+        term = value.term.dup
+        term.gsub!('%', '\%')
+        term.gsub!('_', '\_')
+        column.node.not_eq(nil).and(column.node.matches("%#{term}%"))
       end
     end
 
