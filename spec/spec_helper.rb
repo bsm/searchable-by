@@ -55,6 +55,4 @@ POSTS = {
   b1: USERS[:b].posts.create!(title: 'b1', body: 'her recipe'),
   b2: USERS[:b].posts.create!(title: 'b2', body: 'our recipe'),
   ab: USERS[:a].posts.create!(title: 'ab', reviewer: USERS[:b], body: 'their recipe'),
-  mi: USERS[:a].posts.create!(title: 'minus', body: 'my-recipe'),
-  pl: USERS[:b].posts.create!(title: 'plus', body: 'our+recipe'),
 }.freeze

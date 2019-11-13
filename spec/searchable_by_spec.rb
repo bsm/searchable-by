@@ -11,7 +11,7 @@ describe ActiveRecord::SearchableBy do
     it 'should tokenise strings' do
       expect(norm(nil)).to eq({})
       expect(norm('""')).to eq({})
-      expect(norm('-+""').pluck(:term)).to eq([])
+      expect(norm('-+""')).to eq({})
       expect(norm('simple words')).to eq('simple' => false, 'words' => false)
       expect(norm(" with   \t spaces\n")).to eq('with' => false, 'spaces' => false)
       expect(norm('with with duplicates with')).to eq('with' => false, 'duplicates' => false)
@@ -21,6 +21,8 @@ describe ActiveRecord::SearchableBy do
       expect(norm('with\'apostrophe')).to eq("with'apostrophe" => false)
       expect(norm('with -minus')).to eq('minus' => true, 'with' => false)
       expect(norm('with +plus')).to eq('plus' => false, 'with' => false)
+      expect(norm('with-minus')).to eq('with-minus' => false)
+      expect(norm('with+plus')).to eq('with+plus' => false)
       expect(norm('with -"minus before"')).to eq('minus before' => true, 'with' => false)
       expect(norm('with "-minus within"')).to eq('-minus within' => false, 'with' => false)
       expect(norm('with +"plus before"')).to eq('plus before' => false, 'with' => false)
@@ -32,8 +34,8 @@ describe ActiveRecord::SearchableBy do
   end
 
   it 'should ignore bad inputs' do
-    expect(Post.search_by(nil).count).to eq(7)
-    expect(Post.search_by('').count).to eq(7)
+    expect(Post.search_by(nil).count).to eq(5)
+    expect(Post.search_by('').count).to eq(5)
   end
 
   it 'should configure correctly' do
@@ -52,8 +54,8 @@ describe ActiveRecord::SearchableBy do
   end
 
   it 'should search' do
-    expect(Post.search_by('ALICE').pluck(:title)).to match_array(%w[a1 a2 ab minus])
-    expect(Post.search_by('bOb').pluck(:title)).to match_array(%w[b1 b2 ab plus])
+    expect(Post.search_by('ALICE').pluck(:title)).to match_array(%w[a1 a2 ab])
+    expect(Post.search_by('bOb').pluck(:title)).to match_array(%w[b1 b2 ab])
   end
 
   it 'should search across multiple words' do
@@ -61,16 +63,10 @@ describe ActiveRecord::SearchableBy do
   end
 
   it 'should support search markers' do
-    expect(Post.search_by('aLiCe -your').pluck(:title)).to match_array(%w[a1 ab minus])
+    expect(Post.search_by('aLiCe -your').pluck(:title)).to match_array(%w[a1 ab])
     expect(Post.search_by('+alice "your recipe"').pluck(:title)).to match_array(%w[a2])
-    expect(Post.search_by('bob -"her recipe"').pluck(:title)).to match_array(%w[b2 ab plus])
+    expect(Post.search_by('bob -"her recipe"').pluck(:title)).to match_array(%w[b2 ab])
     expect(Post.search_by('bob +"her recipe"').pluck(:title)).to match_array(%w[b1])
-    expect(Post.search_by('"-recipe"').pluck(:title)).to match_array(%w[minus])
-    expect(Post.search_by('-recipe').pluck(:title)).to match_array([])
-    expect(Post.search_by('-"recipe"').pluck(:title)).to match_array([])
-    expect(Post.search_by('"+recipe"').pluck(:title)).to match_array(%w[plus])
-    expect(Post.search_by('+recipe').pluck(:title)).to match_array(%w[a1 a2 b1 b2 ab minus plus])
-    expect(Post.search_by('+"recipe"').pluck(:title)).to match_array(%w[a1 a2 b1 b2 ab minus plus])
   end
 
   it 'should search within scopes' do
