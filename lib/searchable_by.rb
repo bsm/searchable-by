@@ -30,9 +30,9 @@ module ActiveRecord
       def column(*attrs, &block)
         opts = attrs.extract_options!
         attrs.each do |attr|
-          columns.push Column.new(attr, opts)
+          columns.push Column.new(attr, **opts)
         end
-        columns.push Column.new(block, opts) if block
+        columns.push Column.new(block, **opts) if block
         columns
       end
 
