@@ -15,7 +15,8 @@ class Post < ActiveRecord::Base
   # Limit the number of terms per query to 3.
   searchable_by max_terms: 3 do
     # Allow to search strings.
-    column :title
+    # Use btree index-friendly suffix match, e.g. `ILIKE 'term%'` instead of default `ILIKE '%term%'`.
+    column :title, match: :suffix
 
     # ... and integers.
     column :id, type: :integer
