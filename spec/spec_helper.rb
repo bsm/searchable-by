@@ -35,7 +35,7 @@ class Post < AbstractModel
 
   searchable_by do
     column :title, :body
-    column { User.arel_table[:name] }
+    column proc { User.arel_table[:name] }, match: :prefix
     column { User.arel_table.alias('reviewers_posts')[:name] }
 
     scope do
