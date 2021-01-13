@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 describe SearchableBy::Util do
-  context 'norm_values' do
+  context 'with norm_values' do
     def norm(str)
       described_class.norm_values(str).each_with_object({}) do |val, acc|
         acc[val.term] = val.negate
       end
     end
 
-    it 'should tokenise strings' do
+    it 'tokenises strings' do
       expect(norm(nil)).to eq({})
       expect(norm('""')).to eq({})
       expect(norm('-+""')).to eq({})
@@ -17,7 +17,7 @@ describe SearchableBy::Util do
       expect(norm('with with duplicates with')).to eq('with' => false, 'duplicates' => false)
       expect(norm('with "full term"')).to eq('full term' => false, 'with' => false)
       expect(norm('"""odd double quotes around"""')).to eq('odd double quotes around' => false)
-      expect(norm('""even double quotes around""')).to eq('even double quotes around'=> false)
+      expect(norm('""even double quotes around""')).to eq('even double quotes around' => false)
       expect(norm('with\'apostrophe')).to eq("with'apostrophe" => false)
       expect(norm('with -minus')).to eq('minus' => true, 'with' => false)
       expect(norm('with +plus')).to eq('plus' => false, 'with' => false)

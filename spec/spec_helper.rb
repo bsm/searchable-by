@@ -34,8 +34,9 @@ class Post < AbstractModel
   belongs_to :reviewer, class_name: 'User'
 
   searchable_by do
-    column :title, :body
-    column proc { User.arel_table[:name] }, match: :prefix
+    column :title, match: :prefix, match_phrase: :exact
+    column :body
+    column proc { User.arel_table[:name] }, match: :exact
     column { User.arel_table.alias('reviewers_posts')[:name] }
 
     scope do
@@ -50,9 +51,9 @@ USERS = {
 }.freeze
 
 POSTS = {
-  a1: USERS[:a].posts.create!(title: 'a1', body: 'my recipe '),
-  a2: USERS[:a].posts.create!(title: 'a2', body: 'your recipe'),
-  b1: USERS[:b].posts.create!(title: 'b1', body: 'her recipe'),
-  b2: USERS[:b].posts.create!(title: 'b2', body: 'our recipe'),
-  ab: USERS[:a].posts.create!(title: 'ab', reviewer: USERS[:b], body: 'their recipe'),
+  ax1: USERS[:a].posts.create!(title: 'ax1', body: 'my recipe '),
+  ax2: USERS[:a].posts.create!(title: 'ax2', body: 'your recipe'),
+  bx1: USERS[:b].posts.create!(title: 'bx1', body: 'her recipe'),
+  bx2: USERS[:b].posts.create!(title: 'bx2', body: 'our recipe'),
+  ab1: USERS[:a].posts.create!(title: 'ab1', reviewer: USERS[:b], body: 'their recipe'),
 }.freeze

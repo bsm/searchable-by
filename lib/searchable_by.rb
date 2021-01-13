@@ -6,7 +6,7 @@ module SearchableBy
   autoload :Config, 'searchable_by/config'
   autoload :Util, 'searchable_by/util'
 
-  Value = Struct.new(:term, :negate)
+  Value = Struct.new(:term, :negate, :phrase)
 end
 
 ActiveRecord::Base.extend SearchableBy::Concern if defined?(::ActiveRecord::Base)
