@@ -1,4 +1,8 @@
-require: rubocop-performance
+require:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
 inherit_from:
   - https://gitlab.com/bsm/misc/raw/master/rubocop/default.yml
 
