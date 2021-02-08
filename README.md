@@ -15,9 +15,10 @@ class Post < ActiveRecord::Base
   # Limit the number of terms per query to 3.
   searchable_by max_terms: 3 do
     # Allow to search strings with custom match type.
-    # Use btree index-friendly prefix match, e.g. `ILIKE 'term%'` instead of default `ILIKE '%term%'`.
-    # For phrases use exact match type, e.g. searching for `"My Post"` will query `WHERE LOWER(title) = 'my post'`.
-    column :title, match: :prefix, match_phrase: :exact
+    column :title,
+      match: :prefix,       # Use btree index-friendly prefix match, e.g. `ILIKE 'term%'` instead of default `ILIKE '%term%'`.
+      match_phrase: :exact, # # For phrases use exact match type, e.g. searching for `"My Post"` will query `WHERE LOWER(title) = 'my post'`.
+      min_length: 3 # return no-match if search term is too short (useful for trigram indexes).
 
     # ... and integers.
     column :id, type: :integer

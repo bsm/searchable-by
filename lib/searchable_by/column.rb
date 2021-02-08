@@ -1,16 +1,19 @@
 module SearchableBy
   class Column
-    attr_reader :attr, :type, :match, :match_phrase
+    attr_reader :attr, :type, :match, :match_phrase, :min_length
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil)
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, min_length: nil)
       @attr  = attr
       @type  = type.to_sym
       @match = match
       @match_phrase = match_phrase || match
+      @min_length = min_length
     end
 
     def build_condition(value)
+      return Arel::Nodes::False.new if min_length && value.term.length < min_length # no-match
+
       scope = node.not_eq(nil)
 
       case type
