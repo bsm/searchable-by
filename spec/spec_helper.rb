@@ -8,6 +8,7 @@ ActiveRecord::Base.establish_connection :test
 ActiveRecord::Base.connection.instance_eval do
   create_table :users do |t|
     t.string  :name
+    t.string  :bio
   end
   create_table :posts do |t|
     t.integer :author_id, null: false
@@ -27,6 +28,10 @@ end
 
 class User < AbstractModel
   has_many :posts, foreign_key: :author_id
+
+  searchable_by do
+    column :bio, min_length: 3
+  end
 end
 
 class Post < AbstractModel
@@ -46,8 +51,8 @@ class Post < AbstractModel
 end
 
 USERS = {
-  a: User.create!(name: 'Alice'),
-  b: User.create!(name: 'Bob'),
+  a: User.create!(name: 'Alice', bio: 'First user'),
+  b: User.create!(name: 'Bob', bio: 'Second user'),
 }.freeze
 
 POSTS = {

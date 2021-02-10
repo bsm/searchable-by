@@ -61,6 +61,11 @@ describe SearchableBy do
     expect(Post.search_by('recip').pluck(:title)).to match_array(%w[ax1 ax2 bx1 bx2 ab1])
   end
 
+  it 'supports min term length' do
+    expect(User.search_by('+ir')).to be_empty
+    expect(User.search_by('irs')).to match_array([USERS[:a]])
+  end
+
   it 'searches within scopes' do
     expect(Post.where(title: 'ax1').search_by('ALICE').pluck(:title)).to match_array(%w[ax1])
     expect(Post.where(title: 'ax1').search_by('bOb').pluck(:title)).to be_empty
