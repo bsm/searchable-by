@@ -3,7 +3,7 @@ module SearchableBy
     attr_reader :attr, :type, :match, :match_phrase, :min_length
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil, min_length: nil)
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, min_length: 0)
       @attr  = attr
       @type  = type.to_sym
       @match = match
@@ -12,7 +12,7 @@ module SearchableBy
     end
 
     def build_condition(value)
-      return Arel::Nodes::False.new if min_length && value.term.length < min_length # no-match
+      return Arel::Nodes::False.new if value.term.length < min_length # no-match
 
       scope = node.not_eq(nil)
 
