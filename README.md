@@ -17,8 +17,8 @@ class Post < ActiveRecord::Base
     # Allow to search strings with custom match type.
     column :title,
       match: :prefix,       # Use btree index-friendly prefix match, e.g. `ILIKE 'term%'` instead of default `ILIKE '%term%'`.
-      match_phrase: :exact, # # For phrases use exact match type, e.g. searching for `"My Post"` will query `WHERE LOWER(title) = 'my post'`.
-      min_length: 3 # Return no-match if search term is too short (useful for trigram indexes).
+      match_phrase: :exact, # For phrases use exact match type, e.g. searching for `"My Post"` will query `WHERE LOWER(title) = 'my post'`.
+      min_length: 3         # Return no-match if search term is too short (useful for trigram indexes).
 
     # ... and integers.
     column :id, type: :integer
