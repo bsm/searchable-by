@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.summary     = 'Generate search scopes'
   s.description = 'ActiveRecord plugin'
   s.homepage    = 'https://github.com/bsm/sortable-by'
-  s.license     = 'MIT'
+  s.license     = 'Apache-2.0'
 
   s.files         = `git ls-files -z`.split("\x0").reject {|f| f.start_with?('spec/') }
   s.test_files    = `git ls-files -z -- spec/*`.split("\x0")
