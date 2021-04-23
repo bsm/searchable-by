@@ -4,6 +4,10 @@ module SearchableBy
       values = []
       query  = query.to_s.dup
 
+      # wildcard searching
+      # add full query without splitting by terms
+      values.push Value.new(query, false, false) if query.include? '*'
+
       # capture any phrases inside double quotes
       # exclude from search if preceded by '-'
       query.gsub!(/([\-+]?)"+([^"]*)"+/) do |_|

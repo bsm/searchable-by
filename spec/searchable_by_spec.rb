@@ -22,6 +22,14 @@ describe SearchableBy do
     expect(sql).not_to include(%("posts"."id"))
     expect(sql).to include(%("posts"."title" LIKE 'foo\\%bar%'))
     expect(sql).to include(%("posts"."body" LIKE '%foo\\%bar%'))
+
+    sql = User.search_by('Uni*dom').to_sql
+    expect(sql).to include(%("users"."country" LIKE '%Uni%dom%'))
+
+    sql = User.search_by('Uni * dom').to_sql
+    expect(sql).to include(%("users"."country" LIKE '%Uni%'))
+    expect(sql).to include(%("users"."country" LIKE '%dom%'))
+    expect(sql).to include(%("users"."country" LIKE '%Uni % dom%'))
   end
 
   it 'searches' do
@@ -73,5 +81,11 @@ describe SearchableBy do
 
   it 'searches integers' do
     expect(Post.search_by(POSTS[:ab1].id.to_s).count).to eq(1)
+  end
+
+  it 'supports wildcard searching' do
+    expect(User.search_by('Uni*dom')).to match_array([USERS[:a]])
+    expect(User.search_by('Uni*o')).to match_array([USERS[:a], USERS[:b]])
+    expect(User.search_by('Uni*of*dom')).to be_empty
   end
 end
