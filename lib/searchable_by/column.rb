@@ -1,14 +1,15 @@
 module SearchableBy
   class Column
-    attr_reader :attr, :type, :match, :match_phrase, :min_length
+    attr_reader :attr, :type, :match, :match_phrase, :min_length, :wildcard
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil, min_length: 0)
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, min_length: 0, wildcard: nil) # rubocop:disable Metrics/ParameterLists
       @attr  = attr
       @type  = type.to_sym
       @match = match
       @match_phrase = match_phrase || match
       @min_length = min_length
+      @wildcard = wildcard
     end
 
     def build_condition(value)
@@ -47,6 +48,7 @@ module SearchableBy
       else
         term.gsub!('%', '\%')
         term.gsub!('_', '\_')
+        term.gsub!(wildcard, '%') if wildcard
         scope.and(node.matches("%#{term}%"))
       end
     end

@@ -9,6 +9,7 @@ ActiveRecord::Base.connection.instance_eval do
   create_table :users do |t|
     t.string  :name
     t.string  :bio
+    t.string  :country
   end
   create_table :posts do |t|
     t.integer :author_id, null: false
@@ -31,6 +32,7 @@ class User < AbstractModel
 
   searchable_by do
     column :bio, min_length: 3
+    column :country, wildcard: '*'
   end
 end
 
@@ -51,8 +53,8 @@ class Post < AbstractModel
 end
 
 USERS = {
-  a: User.create!(name: 'Alice', bio: 'First user'),
-  b: User.create!(name: 'Bob', bio: 'Second user'),
+  a: User.create!(name: 'Alice', bio: 'First user', country: 'United Kingdom'),
+  b: User.create!(name: 'Bob', bio: 'Second user', country: 'United States of America'),
 }.freeze
 
 POSTS = {
