@@ -1,5 +1,7 @@
 # Searchable By
 
+[![Test](https://github.com/bsm/searchable-by/actions/workflows/test.yml/badge.svg)](https://github.com/bsm/searchable-by/actions/workflows/test.yml)
+
 ActiveRecord plugin to quickly create search scopes.
 
 ## Installation
