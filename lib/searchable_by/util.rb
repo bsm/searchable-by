@@ -28,22 +28,22 @@ module SearchableBy
     end
 
     def self.build_clauses(columns, values)
-      values.filter_map do |value|
+      values.map do |value|
         # TODO: remove when removing min_length option from columns
         usable = columns.all? do |column|
           column.send(:usable?, value)
         end
         next unless usable
 
-        group = columns.filter_map do |column|
+        group = columns.map do |column|
           column.build_condition(value)
-        end
+        end.tap(&:compact!)
         next if group.empty?
 
         clause = group.inject(&:or)
         clause = clause.not if value.negate
         clause
-      end
+      end.tap(&:compact!)
     end
   end
 end
