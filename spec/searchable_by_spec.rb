@@ -67,9 +67,16 @@ describe SearchableBy do
     expect(Post.search_by('recip').pluck(:title)).to match_array(%w[ax1 ax2 bx1 bx2 ab1])
   end
 
-  it 'supports min term length' do
+  it 'supports min term length in context' do
+    # single term acts as expected
     expect(User.search_by('+ir')).to be_empty
     expect(User.search_by('irs')).to match_array([USERS[:a]])
+
+    # excludes min length term when there's at least one viable term
+    expect(User.search_by('my recipe')).to match_array([USERS[:a], USERS[:a]])
+
+    # includes min length term when in a phrase
+    expect(User.search_by('"my recipe"')).to match_array([USERS[:a]])
   end
 
   it 'searches within scopes' do
