@@ -67,9 +67,16 @@ describe SearchableBy do
     expect(Post.search_by('recip').pluck(:title)).to match_array(%w[ax1 ax2 bx1 bx2 ab1])
   end
 
-  it 'supports min term length' do
-    expect(User.search_by('+ir')).to be_empty
-    expect(User.search_by('irs')).to match_array([USERS[:a]])
+  it 'supports min term length in context' do
+    # values are discarded - too short for bio
+    expect(User.search_by('+be')).to match_array(USERS.values_at(:a, :b))
+    expect(User.search_by('is')).to match_array(USERS.values_at(:a, :b))
+
+    # value is used to scope
+    expect(User.search_by('ear')).to match_array(USERS.values_at(:a))
+
+    # one used, one discarded
+    expect(User.search_by('beard is')).to match_array(USERS.values_at(:a))
   end
 
   it 'searches within scopes' do
@@ -82,8 +89,8 @@ describe SearchableBy do
   end
 
   it 'supports wildcard searching' do
-    expect(User.search_by('uni*dom')).to match_array([USERS[:a]])
-    expect(User.search_by('uni*o')).to match_array([USERS[:a], USERS[:b]])
+    expect(User.search_by('uni*dom')).to match_array(USERS.values_at(:a))
+    expect(User.search_by('uni*o')).to match_array(USERS.values_at(:a, :b))
     expect(User.search_by('uni*of*dom')).to be_empty
   end
 end

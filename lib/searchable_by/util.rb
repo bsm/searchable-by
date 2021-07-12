@@ -1,6 +1,6 @@
 module SearchableBy
   module Util
-    def self.norm_values(query)
+    def self.norm_values(query, min_length: 0)
       values = []
       query  = query.to_s.dup
 
@@ -10,7 +10,7 @@ module SearchableBy
         term = Regexp.last_match(2)
         negate = Regexp.last_match(1) == '-'
 
-        values.push Value.new(term, negate, true) unless term.blank?
+        values.push Value.new(term, negate, true) unless term.blank? || term.length < min_length
         ''
       end
 
@@ -20,7 +20,7 @@ module SearchableBy
         negate = term[0] == '-'
         term.slice!(0) if negate || term[0] == '+'
 
-        values.push Value.new(term, negate, false) unless term.blank?
+        values.push Value.new(term, negate, false) unless term.blank? || term.length < min_length
       end
 
       values.uniq!
@@ -28,19 +28,22 @@ module SearchableBy
     end
 
     def self.build_clauses(columns, values)
-      clauses = values.map do |value|
-        grouping = columns.map do |column|
-          column.build_condition(value)
+      values.map do |value|
+        # TODO: remove when removing min_length option from columns
+        usable = columns.all? do |column|
+          column.send(:usable?, value)
         end
-        grouping.compact!
-        next if grouping.empty?
+        next unless usable
 
-        clause = grouping.inject(&:or)
+        group = columns.map do |column|
+          column.build_condition(value)
+        end.tap(&:compact!)
+        next if group.empty?
+
+        clause = group.inject(&:or)
         clause = clause.not if value.negate
         clause
-      end
-      clauses.compact!
-      clauses
+      end.tap(&:compact!)
     end
   end
 end

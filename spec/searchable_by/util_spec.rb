@@ -2,8 +2,8 @@ require 'spec_helper'
 
 describe SearchableBy::Util do
   context 'with norm_values' do
-    def norm(str)
-      described_class.norm_values(str).each_with_object({}) do |val, acc|
+    def norm(str, **opts)
+      described_class.norm_values(str, **opts).each_with_object({}) do |val, acc|
         acc[val.term] = val.negate
       end
     end
@@ -30,6 +30,7 @@ describe SearchableBy::Util do
       expect(norm('+plus "in other term"')).to eq('in other term' => false, 'plus' => false)
       expect(norm('with_blank \'\'')).to eq('with_blank' => false, '\'\'' => false)
       expect(norm('with_blank_doubles ""')).to eq('with_blank_doubles' => false)
+      expect(norm('with min length', min_length: 4)).to eq('length' => false, 'with' => false)
     end
   end
 end
