@@ -11,9 +11,10 @@ module SearchableBy
       super
     end
 
-    def searchable_by(max_terms: nil, **options, &block)
+    def searchable_by(max_terms: nil, min_length: 0, **options, &block)
       _searchable_by_config.instance_eval(&block)
       _searchable_by_config.max_terms = max_terms if max_terms
+      _searchable_by_config.min_length = min_length
       _searchable_by_config.options.update(options) unless options.empty?
       _searchable_by_config
     end
@@ -21,10 +22,11 @@ module SearchableBy
     # @param [String] query the search query
     # @return [ActiveRecord::Relation] the scoped relation
     def search_by(query)
-      columns = _searchable_by_config.columns
+      config  = _searchable_by_config
+      columns = config.columns
       return all if columns.empty?
 
-      values = Util.norm_values(query).first(_searchable_by_config.max_terms)
+      values = Util.norm_values(query, min_length: config.min_length).first(config.max_terms)
       return all if values.empty?
 
       columns.each do |col|
@@ -33,7 +35,7 @@ module SearchableBy
       clauses = Util.build_clauses(columns, values)
       return all if clauses.empty?
 
-      scope = instance_exec(&_searchable_by_config.scoping)
+      scope = instance_exec(&config.scoping)
       clauses.each do |clause|
         scope = scope.where(clause)
       end

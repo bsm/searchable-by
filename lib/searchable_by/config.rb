@@ -1,11 +1,12 @@
 module SearchableBy
   class Config
     attr_reader :columns, :scoping, :options
-    attr_accessor :max_terms
+    attr_accessor :max_terms, :min_length
 
     def initialize
       @columns = []
       @max_terms = 5
+      @min_length = 0
       @options = {}
       scope { all }
     end

@@ -30,8 +30,8 @@ end
 class User < AbstractModel
   has_many :posts, foreign_key: :author_id
 
-  searchable_by do
-    column :bio, min_length: 3
+  searchable_by min_length: 3 do
+    column :bio
     column :country, wildcard: '*'
   end
 end
@@ -53,8 +53,8 @@ class Post < AbstractModel
 end
 
 USERS = {
-  a: User.create!(name: 'Alice', bio: 'First user', country: 'United Kingdom'),
-  b: User.create!(name: 'Bob', bio: 'Second user', country: 'United States of America'),
+  a: User.create!(name: 'Alice', bio: "Chuck Norris' beard is immutable.", country: 'United Kingdom'),
+  b: User.create!(name: 'Bob', bio: 'Chuck Norris can divide by zero.', country: 'United States of America'),
 }.freeze
 
 POSTS = {
