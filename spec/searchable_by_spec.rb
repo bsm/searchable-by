@@ -8,7 +8,7 @@ describe SearchableBy do
 
   it 'configures correctly' do
     expect(AbstractModel._searchable_by_config.columns.size).to eq(1)
-    expect(Post._searchable_by_config.columns.size).to eq(5)
+    expect(Post._searchable_by_config.columns.size).to eq(6)
   end
 
   it 'generates SQL' do
@@ -64,6 +64,9 @@ describe SearchableBy do
     # title uses match_phrase: :exact
     expect(Post.search_by('"ab"').pluck(:title)).to be_empty
     expect(Post.search_by('"ab1"').pluck(:title)).to match_array(%w[ab1])
+
+    # country uses match: :full in combination with wildcard: '*'
+    expect(Post.search_by('*kingdom').pluck(:title)).to match_array(%w[ax1 ax2 ab1])
 
     # body uses match: :all (default)
     expect(Post.search_by('recip').pluck(:title)).to match_array(%w[ax1 ax2 bx1 bx2 ab1])
