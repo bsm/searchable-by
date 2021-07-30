@@ -51,16 +51,22 @@ module SearchableBy
       when :exact
         term.downcase!
         scope.and(node.lower.eq(term))
+      when :full
+        escape_term!(term)
+        scope.and(node.matches(term))
       when :prefix
-        term.gsub!('%', '\%')
-        term.gsub!('_', '\_')
+        escape_term!(term)
         scope.and(node.matches("#{term}%"))
-      else
-        term.gsub!('%', '\%')
-        term.gsub!('_', '\_')
-        term.gsub!(wildcard, '%') if wildcard
+      else # :all (wraps term in wildcards)
+        escape_term!(term)
         scope.and(node.matches("%#{term}%"))
       end
+    end
+
+    def escape_term!(term)
+      term.gsub!('%', '\%')
+      term.gsub!('_', '\_')
+      term.gsub!(wildcard, '%') if wildcard
     end
   end
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    searchable-by (0.6.0)
+    searchable-by (0.6.1)
       activerecord
 
 GEM
