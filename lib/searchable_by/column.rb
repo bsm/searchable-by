@@ -55,11 +55,12 @@ module SearchableBy
         term.gsub!('%', '\%')
         term.gsub!('_', '\_')
         scope.and(node.matches("#{term}%"))
-      else
+      else # :all (wraps term in wildcards) or :wildcard (explicit wildcards)
         term.gsub!('%', '\%')
         term.gsub!('_', '\_')
         term.gsub!(wildcard, '%') if wildcard
-        scope.and(node.matches("%#{term}%"))
+        pattern = type == :wildcard ? term : "%#{term}%"
+        scope.and(node.matches(pattern))
       end
     end
   end

@@ -32,7 +32,7 @@ class User < AbstractModel
 
   searchable_by min_length: 3 do
     column :bio
-    column :country, wildcard: '*'
+    column :country, wildcard: '*', match: :wildcard
   end
 end
 
