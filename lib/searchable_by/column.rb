@@ -3,7 +3,7 @@ module SearchableBy
     attr_reader :attr, :type, :match, :match_phrase, :wildcard
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil, **_opts) # rubocop:disable Metrics/ParameterLists
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil)
       @attr  = attr
       @type  = type.to_sym
       @match = match
