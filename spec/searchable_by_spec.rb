@@ -28,7 +28,7 @@ describe SearchableBy do
     expect(sql).to include(%("users"."bio" LIKE '%uni*dom%'))
 
     sql = User.search_by('"uni * dom"').to_sql
-    expect(sql).to include(%("users"."country" LIKE 'uni % dom'))
+    expect(sql).to include(%("users"."country" LIKE '"uni % dom"'))
     expect(sql).to include(%("users"."bio" LIKE '%uni * dom%'))
   end
 

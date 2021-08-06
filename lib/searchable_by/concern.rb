@@ -32,14 +32,13 @@ module SearchableBy
       columns.each do |col|
         col.node ||= col.attr.is_a?(Proc) ? col.attr.call : arel_table[col.attr]
       end
-      clauses = Util.build_clauses(columns, values)
+
+      clauses = Util.build_full_clauses(columns.select(&:full_match?), query)
+      clauses << Util.build_partial_clauses(columns.select(&:partial_match?), values)&.inject(&:and)
+      clauses.tap(&:compact!)
       return all if clauses.empty?
 
-      scope = instance_exec(&config.scoping)
-      clauses.each do |clause|
-        scope = scope.where(clause)
-      end
-      scope
+      instance_exec(&config.scoping).where(clauses.inject(&:or))
     end
   end
 end
