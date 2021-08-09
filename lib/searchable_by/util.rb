@@ -28,13 +28,21 @@ module SearchableBy
     end
 
     def self.build_full_clauses(columns, query)
+      value = Value.new(query, false, true)
       columns.map do |column|
-        column.build_condition(Value.new(query, false, true))
+        # TODO: remove usable check when removing min_length option from columns
+        column.build_condition(value) if column.send(:usable?, value)
       end.tap(&:compact!)
     end
 
     def self.build_partial_clauses(columns, values)
       values.map do |value|
+        # TODO: remove when removing min_length option from columns
+        usable = columns.all? do |column|
+          column.send(:usable?, value)
+        end
+        next unless usable
+
         group = columns.map do |column|
           column.build_condition(value)
         end.tap(&:compact!)
