@@ -1,22 +1,19 @@
 module SearchableBy
   class Column
+    VALID_MATCH_TYPES = %i[all prefix exact].freeze
+
     attr_reader :attr, :type, :match, :match_phrase, :wildcard
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil, **opts) # rubocop:disable Metrics/ParameterLists
-      if opts.key?(:min_length)
-        ActiveSupport::Deprecation.warn(
-          'Setting min_length for individual columns is deprecated and will be removed in the next release.' \
-          'Please pass it as an option to searchable_by instead',
-        )
-      end
-
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil)
       @attr  = attr
       @type  = type.to_sym
       @match = match
       @match_phrase = match_phrase || match
-      @min_length = opts[:min_length].to_i
       @wildcard = wildcard
+
+      raise ArgumentError, "invalid match option #{@match.inspect}" unless VALID_MATCH_TYPES.include? @match
+      raise ArgumentError, "invalid match_phrase option #{@match_phrase.inspect}" unless VALID_MATCH_TYPES.include? @match_phrase
     end
 
     def build_condition(value)
@@ -32,11 +29,6 @@ module SearchableBy
 
     private
 
-    # TODO: remove when removing min_length option from columns
-    def usable?(value)
-      value.term.length >= @min_length
-    end
-
     def int_condition(scope, value)
       scope.and(node.eq(Integer(value.term)))
     rescue ArgumentError
@@ -49,11 +41,13 @@ module SearchableBy
 
       case type
       when :exact
-        term.downcase!
-        scope.and(node.lower.eq(term))
-      when :full
-        escape_term!(term)
-        scope.and(node.matches(term))
+        if wildcard
+          escape_term!(term)
+          scope.and(node.matches(term))
+        else
+          term.downcase!
+          scope.and(node.lower.eq(term))
+        end
       when :prefix
         escape_term!(term)
         scope.and(node.matches("#{term}%"))

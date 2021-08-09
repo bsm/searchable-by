@@ -29,12 +29,6 @@ module SearchableBy
 
     def self.build_clauses(columns, values)
       values.map do |value|
-        # TODO: remove when removing min_length option from columns
-        usable = columns.all? do |column|
-          column.send(:usable?, value)
-        end
-        next unless usable
-
         group = columns.map do |column|
           column.build_condition(value)
         end.tap(&:compact!)
