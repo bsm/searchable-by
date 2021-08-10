@@ -29,8 +29,8 @@ class Post < ActiveRecord::Base
     column { Author.arel_table[:name] }
     column { Arel::Nodes::NamedFunction.new('CONCAT', [arel_table[:prefix], arel_table[:suffix]]) }
 
-    # Allow custom wildcard replacement using a match e.g. searching for `"My*Post"` will query `ILIKE 'My%Post'`.
-    column :metadata, match: :prefix, match_phrase: :exact, wildcard: '*'
+    # Allow custom wildcard replacement using a match and non-space tokenizer e.g. searching for `"My* Post"` will query `ILIKE 'my% post'`.
+    column :metadata, match: :prefix, match_phrase: :exact, wildcard: '*', tokenizer: :downcase
 
     # Support custom scopes.
     scope do

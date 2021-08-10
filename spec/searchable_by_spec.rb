@@ -23,9 +23,10 @@ describe SearchableBy do
     expect(sql).to include(%("posts"."title" LIKE 'foo\\%bar%'))
     expect(sql).to include(%("posts"."body" LIKE '%foo\\%bar%'))
 
-    sql = User.search_by('uni*dom').to_sql
-    expect(sql).to include(%("users"."country" LIKE 'uni%dom'))
-    expect(sql).to include(%("users"."bio" LIKE '%uni*dom%'))
+    sql = User.search_by('uni* kingdom').to_sql
+    expect(sql).to include(%("users"."country" LIKE 'uni% kingdom'))
+    expect(sql).to include(%("users"."bio" LIKE '%uni*%'))
+    expect(sql).to include(%("users"."bio" LIKE '%kingdom%'))
 
     sql = User.search_by('"uni * dom"').to_sql
     expect(sql).to include(%("users"."country" LIKE 'uni % dom'))

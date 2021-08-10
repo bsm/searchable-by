@@ -2,15 +2,16 @@ module SearchableBy
   class Column
     VALID_MATCH_TYPES = %i[all prefix exact].freeze
 
-    attr_reader :attr, :type, :match, :match_phrase, :wildcard
+    attr_reader :attr, :type, :match, :match_phrase, :wildcard, :tokenizer
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil)
+    def initialize(attr, type: :string, match: :all, **opts)
       @attr  = attr
       @type  = type.to_sym
       @match = match
-      @match_phrase = match_phrase || match
-      @wildcard = wildcard
+      @match_phrase = opts[:match_phrase] || match
+      @wildcard = opts[:wildcard]
+      @tokenizer = opts[:tokenizer]
 
       raise ArgumentError, "invalid match option #{@match.inspect}" unless VALID_MATCH_TYPES.include? @match
       raise ArgumentError, "invalid match_phrase option #{@match_phrase.inspect}" unless VALID_MATCH_TYPES.include? @match_phrase

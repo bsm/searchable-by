@@ -26,20 +26,17 @@ module SearchableBy
       columns = config.columns
       return all if columns.empty?
 
-      values = Util.norm_values(query, min_length: config.min_length).first(config.max_terms)
-      return all if values.empty?
-
-      columns.each do |col|
-        col.node ||= col.attr.is_a?(Proc) ? col.attr.call : arel_table[col.attr]
-      end
-      clauses = Util.build_clauses(columns, values)
-      return all if clauses.empty?
-
       scope = instance_exec(&config.scoping)
-      clauses.each do |clause|
-        scope = scope.where(clause)
-      end
-      scope
+
+      scope.where(columns.group_by(&:tokenizer).map do |tokenizer, cols|
+        values = Util.norm_values(query, min_length: config.min_length, tokenizer: tokenizer).first(config.max_terms)
+        next if values.empty?
+
+        cols.each do |col|
+          col.node ||= col.attr.is_a?(Proc) ? col.attr.call : arel_table[col.attr]
+        end
+        Util.build_clauses(cols, values).inject(&:and)
+      end.compact.inject(&:or))
     end
   end
 end

@@ -32,7 +32,7 @@ class User < AbstractModel
 
   searchable_by min_length: 3 do
     column :bio
-    column :country, wildcard: '*', match: :exact
+    column :country, wildcard: '*', match: :exact, tokenizer: proc {|s| s.downcase }
   end
 end
 
@@ -44,7 +44,7 @@ class Post < AbstractModel
     column :title, match: :prefix, match_phrase: :exact
     column :body
     column proc { User.arel_table[:name] }, match: :exact
-    column proc { User.arel_table[:country] }, wildcard: '*', match: :exact
+    column proc { User.arel_table[:country] }, wildcard: '*', match: :exact, tokenizer: :downcase
     column { User.arel_table.alias('reviewers_posts')[:name] }
 
     scope do
