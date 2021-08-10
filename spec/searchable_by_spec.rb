@@ -66,8 +66,8 @@ describe SearchableBy do
     expect(Post.search_by('"ab"').pluck(:title)).to be_empty
     expect(Post.search_by('"ab1"').pluck(:title)).to match_array(%w[ab1])
 
-    # country uses match: :full in combination with wildcard: '*'
-    expect(Post.search_by('*kingdom').pluck(:title)).to match_array(%w[ax1 ax2 ab1])
+    # country uses match: :exact in combination with wildcard: '*'
+    expect(Post.search_by('* kingdom').pluck(:title)).to match_array(%w[ax1 ax2 ab1])
 
     # body uses match: :all (default)
     expect(Post.search_by('recip').pluck(:title)).to match_array(%w[ax1 ax2 bx1 bx2 ab1])
@@ -95,7 +95,7 @@ describe SearchableBy do
   end
 
   it 'supports wildcard searching' do
-    expect(User.search_by('*uni*dom')).to match_array(USERS.values_at(:a))
+    expect(User.search_by('* kingdom')).to match_array(USERS.values_at(:a))
     expect(User.search_by('*uni*o*')).to match_array(USERS.values_at(:a, :b))
     expect(User.search_by('*uni*of*dom')).to be_empty
   end
