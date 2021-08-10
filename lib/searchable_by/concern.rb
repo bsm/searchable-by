@@ -29,7 +29,7 @@ module SearchableBy
       scope = instance_exec(&config.scoping)
 
       scope.where(columns.group_by(&:tokenizer).map do |tokenizer, cols|
-        values = Util.norm_values(query, min_length: config.min_length, tokenizer: tokenizer).first(config.max_terms)
+        values = Util.norm_values(query, tokenizer: tokenizer, min_length: config.min_length).first(config.max_terms)
         next if values.empty?
 
         cols.each do |col|

@@ -5,13 +5,13 @@ module SearchableBy
     attr_reader :attr, :type, :match, :match_phrase, :wildcard, :tokenizer
     attr_accessor :node
 
-    def initialize(attr, type: :string, match: :all, **opts)
+    def initialize(attr, type: :string, match: :all, match_phrase: nil, wildcard: nil, tokenizer: nil) # rubocop:disable Metrics/ParameterLists
       @attr  = attr
       @type  = type.to_sym
       @match = match
-      @match_phrase = opts[:match_phrase] || match
-      @wildcard = opts[:wildcard]
-      @tokenizer = opts[:tokenizer]
+      @match_phrase = match_phrase || match
+      @wildcard = wildcard
+      @tokenizer = tokenizer
 
       raise ArgumentError, "invalid match option #{@match.inspect}" unless VALID_MATCH_TYPES.include? @match
       raise ArgumentError, "invalid match_phrase option #{@match_phrase.inspect}" unless VALID_MATCH_TYPES.include? @match_phrase

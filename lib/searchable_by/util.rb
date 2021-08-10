@@ -1,10 +1,8 @@
 module SearchableBy
   module Util
-    def self.norm_values(query, min_length: 0, **opts)
+    def self.norm_values(query, tokenizer: nil, min_length: 0)
       values = []
       query  = query.to_s.dup
-      tokenizer = opts[:tokenizer] || :split
-      tokenizer = tokenizer.to_proc if tokenizer.is_a?(Symbol)
 
       # capture any phrases inside double quotes
       # exclude from search if preceded by '-'
@@ -18,7 +16,7 @@ module SearchableBy
 
       # for the remaining terms remove sign if precedes
       # exclude term from search if sign preceding is '-'
-      Array.wrap(tokenizer.call(query)).each do |term|
+      tokenize(query, tokenizer: tokenizer) do |term|
         negate = term[0] == '-'
         term.slice!(0) if negate || term[0] == '+'
 
@@ -27,6 +25,19 @@ module SearchableBy
 
       values.uniq!
       values
+    end
+
+    def self.tokenize(query, tokenizer: nil, &block)
+      case tokenizer
+      when nil, Symbol
+        tokenizer = (tokenizer || :split).to_proc
+      when Proc
+        # noop
+      else
+        raise ArgumentError, 'invalid tokenizer, must be Symbol or Proc'
+      end
+
+      Array.wrap(tokenizer.call(query)).each(&block)
     end
 
     def self.build_clauses(columns, values)
