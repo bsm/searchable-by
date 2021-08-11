@@ -11,6 +11,13 @@ module SearchableBy
       scope { all }
     end
 
+    def configure(max_terms, min_length, **options, &block)
+      instance_eval(&block)
+      self.max_terms = max_terms if max_terms
+      self.min_length = min_length
+      self.options.update(options) unless options.empty?
+    end
+
     def initialize_copy(other)
       @columns = other.columns.dup
       super
