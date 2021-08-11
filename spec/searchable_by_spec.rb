@@ -7,8 +7,8 @@ describe SearchableBy do
   end
 
   it 'configures correctly' do
-    expect(AbstractModel._searchable_by_config.columns.size).to eq(1)
-    expect(Post._searchable_by_config.columns.size).to eq(6)
+    expect(AbstractModel._searchable_by_config[:default].columns.size).to eq(1)
+    expect(Post._searchable_by_config[:default].columns.size).to eq(6)
   end
 
   it 'generates SQL' do
@@ -93,9 +93,14 @@ describe SearchableBy do
     expect(Post.search_by(POSTS[:ab1].id.to_s).count).to eq(1)
   end
 
-  it 'supports wildcard searching' do
+  it 'supports wildcards' do
     expect(User.search_by('*uni*dom')).to match_array(USERS.values_at(:a))
     expect(User.search_by('*uni*o*')).to match_array(USERS.values_at(:a, :b))
     expect(User.search_by('*uni*of*dom')).to be_empty
+  end
+
+  it 'supports profiles' do
+    expect(User.search_by('king', profile: :country_only)).to match_array(USERS.values_at(:a))
+    expect(User.search_by('Norris', profile: :country_only)).to be_empty
   end
 end

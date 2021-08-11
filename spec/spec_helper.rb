@@ -34,6 +34,10 @@ class User < AbstractModel
     column :bio
     column :country, wildcard: '*', match: :exact
   end
+
+  searchable_by :country_only do
+    column :country
+  end
 end
 
 class Post < AbstractModel

@@ -29,13 +29,18 @@ class Post < ActiveRecord::Base
     column { Author.arel_table[:name] }
     column { Arel::Nodes::NamedFunction.new('CONCAT', [arel_table[:prefix], arel_table[:suffix]]) }
 
-    # Allow custom wildcard replacement using a match e.g. searching for `"My*Post"` will query `ILIKE 'My%Post'`.
-    column :metadata, match: :prefix, match_phrase: :exact, wildcard: '*'
-
     # Support custom scopes.
     scope do
       joins(:author)
     end
+  end
+
+  # Multiple profiles can be defined. This one only searches title and metadata.
+  searchable_by :metadata do
+    column :title, match: :prefix
+
+    # Allow custom wildcard replacement using a match e.g. searching for `"My*Post"` will query `ILIKE 'My%Post'`.
+    column :metadata, match: :prefix, wildcard: '*'
   end
 end
 
@@ -47,4 +52,7 @@ Post.search_by('alice "pie recipe"')
 
 # Search for 'alice' but NOT for 'pie recipe'
 Post.search_by('alice -"pie recipe"')
+
+# Search using metadata profile
+Post.search_by('meta', profile: :metadata)
 ```
