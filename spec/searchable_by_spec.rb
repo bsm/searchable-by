@@ -9,6 +9,7 @@ describe SearchableBy do
   it 'configures correctly' do
     expect(AbstractModel._searchable_by_profiles[:default].columns.size).to eq(1)
     expect(Post._searchable_by_profiles[:default].columns.size).to eq(6)
+    expect(User._searchable_by_profiles[:default].min_length).to eq(3)
   end
 
   it 'generates SQL' do
