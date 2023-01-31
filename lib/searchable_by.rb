@@ -10,4 +10,4 @@ module SearchableBy
   Value = Struct.new(:term, :negate, :phrase)
 end
 
-ActiveRecord::Base.extend SearchableBy::Concern if defined?(::ActiveRecord::Base)
+ActiveRecord::Base.extend SearchableBy::Concern if defined?(ActiveRecord::Base)
