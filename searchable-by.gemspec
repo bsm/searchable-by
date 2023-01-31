@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'searchable-by'
-  s.version     = '0.7.1'
+  s.version     = '0.7.2'
   s.authors     = ['Dimitrij Denissenko']
   s.email       = ['dimitrij@blacksquaremedia.com']
   s.summary     = 'Generate search scopes'
@@ -14,11 +14,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'activerecord'
   s.add_development_dependency 'bundler'
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'rubocop'
-  s.add_development_dependency 'rubocop-bsm'
-  s.add_development_dependency 'sqlite3'
   s.metadata = {
     'rubygems_mfa_required' => 'true',
   }

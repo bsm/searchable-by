@@ -6,7 +6,7 @@ module SearchableBy
 
       # capture any phrases inside double quotes
       # exclude from search if preceded by '-'
-      query.gsub!(/([\-+]?)"+([^"]*)"+/) do |_|
+      query.gsub!(/([-+]?)"+([^"]*)"+/) do |_|
         term = Regexp.last_match(2)
         negate = Regexp.last_match(1) == '-'
 
