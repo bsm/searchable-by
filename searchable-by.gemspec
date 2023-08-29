@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.7'
 
   s.add_dependency 'activerecord'
-  s.add_development_dependency 'bundler'
   s.metadata = {
     'rubygems_mfa_required' => 'true',
   }
