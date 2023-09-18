@@ -58,8 +58,8 @@ module SearchableBy
     end
 
     def escape_term!(term)
-      term.gsub!('%', '\%')
-      term.gsub!('_', '\_')
+      term.gsub!('%', '\%') # explicitly escaping any % chars, ignore CodeQL
+      term.gsub!('_', '\_') # explicitly escaping any _ chars, ignore CodeQL
       term.gsub!(wildcard, '%') if wildcard
     end
   end
