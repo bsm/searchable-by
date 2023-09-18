@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'searchable-by'
-  s.version     = '0.7.3'
+  s.version     = '0.7.4'
   s.authors     = ['Dimitrij Denissenko']
   s.email       = ['dimitrij@blacksquaremedia.com']
   s.summary     = 'Generate search scopes'
@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
 
   s.files         = `git ls-files -z`.split("\x0").reject {|f| f.start_with?('spec/') }
   s.require_paths = ['lib']
-  s.required_ruby_version = '>= 2.7'
+  s.required_ruby_version = '>= 3.0'
 
   s.add_dependency 'activerecord'
   s.metadata = {
